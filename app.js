@@ -30,7 +30,9 @@ app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/tatto", tattooRoutes);
-
+app.get("/",(req,res)=>{
+	res.send("hello)
+})
 
 
 
