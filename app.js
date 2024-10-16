@@ -18,12 +18,7 @@ app.use(express.json());
 app.use(cookieParser());
 // connect();
 
-app.use(
-	cors({
-		origin: "*",
-		credentials: true,
-	})
-);
+app.use(cors());
 connect();
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/product", productRoutes);
