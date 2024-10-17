@@ -8,7 +8,8 @@ router.get('/get', productController.getProducts);
 router.get('/get/:id', productController.getProductById);
 router.put('/update/:id', productController.updateProduct);
 router.delete('/del/:id', productController.deleteProduct);
-router.post('/buy',verifyToken ,productController.buyItem);
-
+router.post('/buy',productController.buyItem);
+router.get('/getitemsBought', verifyToken, productController.getItemsBought);
+router.post('/addItem', verifyToken, productController.addItemToBoughtList);
 
 module.exports = router;
