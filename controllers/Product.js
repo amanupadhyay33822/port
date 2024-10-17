@@ -153,19 +153,19 @@ exports.buyItem = async (req, res) => {
 // Add item to cart
 exports.addItemToBoughtList = async (req, res) => {
   try {
+   
     const { productId, quantity } = req.body;
     const userId = req.user.id; // Assuming user ID is available from auth middleware
-
     // Find the product details
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+    
 
     // Calculate price and subtotal
-    const price = product.discountedPrice || product.price; // Use discounted price if available
+    const price = product.discountedPrice || product.price.amount; // Use discounted price if available
     const subtotal = price * quantity;
-
     // Create the itemBought entry to be added
     const itemBought = {
       productId: product._id,
@@ -178,8 +178,10 @@ exports.addItemToBoughtList = async (req, res) => {
 
     // Add the item to the user's itemsBought array
     await User.findByIdAndUpdate(userId, {
-      $push: { itemsBought: itemBought },
+      $push: { itemsBought: product._id },
     });
+
+
 
     return res.status(200).json({
       success: true,
@@ -229,3 +231,29 @@ exports.getItemsBought = async (req, res) => {
     });
   }
 };
+
+
+exports.deleteItem = async (req, res) => {
+
+  try {
+    const {itemId}=req.body;// Expecting userId and item to delete in the request body
+    const userId = req.user.id;
+    
+      // Find user by ID and remove the item from the itemBought array
+      const user = await User.findByIdAndUpdate(
+          userId,
+          { $pull: { itemsBought: itemId } },
+          { new: true } // Return the updated user
+      );
+console.log(user);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json({ message: 'Item deleted successfully', itemsBought: user.itemsBought });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
+  }
+};
+
