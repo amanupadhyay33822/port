@@ -11,5 +11,5 @@ router.delete('/del/:id', productController.deleteProduct);
 router.post('/buy',productController.buyItem);
 router.get('/getitemsBought', verifyToken, productController.getItemsBought);
 router.post('/addItem', verifyToken, productController.addItemToBoughtList);
-
+router.delete('/delUserItem', verifyToken,productController.deleteItem); // Endpoint to delete an item
 module.exports = router;
