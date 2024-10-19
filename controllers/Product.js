@@ -199,7 +199,7 @@ exports.addItemToBoughtList = async (req, res) => {
 
 exports.getItemsBought = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming user ID is available from the auth middleware
+    const userId = req.params.id; // Assuming user ID is available from the auth middleware
 
     // Find the user by ID and retrieve only the 'itemsBought' field
     const user = await User.findById(userId).populate('itemsBought');
