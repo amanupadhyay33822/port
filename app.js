@@ -4,6 +4,7 @@ const userRoutes = require("./routes/auth");
 const productRoutes = require("./routes/product");
 const appointmentRoutes = require("./routes/appointment");
 const cookieParser = require("cookie-parser");
+const contactRoutes = require("./routes/contact");
 const tattooRoutes = require('./routes/tatto');
 const portfolioRoutes = require('./routes/portfolio');
 const cors = require("cors");
@@ -30,7 +31,7 @@ app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/tatto", tattooRoutes);
-
+app.use("/api/v1/contact", contactRoutes);
 
 
 
