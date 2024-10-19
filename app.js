@@ -26,13 +26,13 @@ app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/tatto", tattooRoutes);
-<<<<<<< HEAD
+
 app.use("/api/v1/contact", contactRoutes);
-=======
+
 app.get("/",(req,res)=>{
 	res.send("hello")
 })
->>>>>>> d8eb3f6b26b3cd19312a7890bee94676d7706f70
+
 
 
 
