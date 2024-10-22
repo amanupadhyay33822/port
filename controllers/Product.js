@@ -158,32 +158,35 @@ exports.addItemToBoughtList = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Calculate price and totalPrice (subtotal for this item)
-    const price = product.discountedPrice || product.price.amount; // Use discounted price if available
+    // Calculate price and total price
+    const price = product.discountedPrice || product.price.amount;
     const totalPrice = price * quantity;
 
-    // Add the item to the user's itemsBought array with quantity and totalPrice
+    // Create the itemBought entry
+    const itemBought = {
+      productId: product._id, // Make sure this is an ObjectId, not a string
+      quantity: Number(quantity), // Ensure quantity is a number
+      totalPrice: totalPrice, // This should be a number
+    };
+    console.log('Item to be added:', itemBought); // Debugging log
+
+    // Add the item to the user's itemsBought array
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      {
-        $push: {
-          itemsBought: {
-            productId: product._id,
-            quantity,
-            totalPrice
-          }
-        }
-      },
-      { new: true }
-    );
+      { $push: { itemsBought: itemBought } },
+      { new: true } // Return the updated user document
+    ).populate({
+      path: 'itemsBought.productId',
+      select: 'name price description', // Only return necessary fields from Product
+    });
 
     return res.status(200).json({
       success: true,
-      message: 'Item added to purchased list successfully!',
       itemsBought: updatedUser.itemsBought,
     });
 
   } catch (error) {
+    console.error('Error adding item to cart:', error); // Debugging log
     return res.status(500).json({
       success: false,
       message: error.message,
