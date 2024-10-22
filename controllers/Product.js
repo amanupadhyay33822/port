@@ -147,10 +147,6 @@ exports.buyItem = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
- // Import the Product model
-
-// Add item to cart
 exports.addItemToBoughtList = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
@@ -162,29 +158,29 @@ exports.addItemToBoughtList = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Calculate price and subtotal
-    const price = product.discountedPrice || product.price; // Use discounted price if available
-    const subtotal = price * quantity;
+    // Calculate price and totalPrice (subtotal for this item)
+    const price = product.discountedPrice || product.price.amount; // Use discounted price if available
+    const totalPrice = price * quantity;
 
-    // Create the itemBought entry to be added
-    const itemBought = {
-      productId: product._id,
-      name: product.name,
-      quantity,
-      price,
-      subtotal,
-      purchasedAt: new Date(), // Optional: store the purchase date
-    };
-
-    // Add the item to the user's itemsBought array
-    await User.findByIdAndUpdate(userId, {
-      $push: { itemsBought: itemBought },
-    });
+    // Add the item to the user's itemsBought array with quantity and totalPrice
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          itemsBought: {
+            productId: product._id,
+            quantity,
+            totalPrice
+          }
+        }
+      },
+      { new: true }
+    );
 
     return res.status(200).json({
       success: true,
       message: 'Item added to purchased list successfully!',
-      itemBought,
+      itemsBought: updatedUser.itemsBought,
     });
 
   } catch (error) {
@@ -195,37 +191,61 @@ exports.addItemToBoughtList = async (req, res) => {
   }
 };
 
+
+
+
+
 exports.getItemsBought = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming user ID is available from the auth middleware
+    const userId = req.user.id; // Assuming user ID is available from auth middleware
 
-    // Find the user by ID and retrieve only the 'itemsBought' field
-    const user = await User.findById(userId).populate('itemsBought');
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Check if the user has purchased any items
-    if (!user.itemsBought || user.itemsBought.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: 'No items have been purchased yet.',
-        itemsBought: [],
-      });
-    }
-
-    // Return the list of items bought
-    return res.status(200).json({
-      success: true,
-      itemsBought: user.itemsBought,
+    // Fetch the user and populate the product details in itemsBought
+    const user = await User.findById(userId).populate({
+      path: 'itemsBought.productId', // Populate the productId field in itemsBought
+      select: 'name price description ', // Exclude buffer field and include only necessary fields
     });
 
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Return the itemsBought array
+    return res.status(200).json({
+      success: true,
+      itemsBought: user.itemsBought, // This will exclude the buffer field
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'An error occurred while retrieving purchased items.',
-      error: error.message,
+      message: error.message,
     });
   }
 };
+
+
+
+
+exports.deleteItem = async (req, res) => {
+
+  try {
+    const {itemId}=req.body;// Expecting userId and item to delete in the request body
+    const userId = req.user.id;
+    
+      // Find user by ID and remove the item from the itemBought array
+      const user = await User.findByIdAndUpdate(
+          userId,
+          { $pull: { itemsBought: itemId } },
+          { new: true } // Return the updated user
+      );
+console.log(user);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json({ message: 'Item deleted successfully', itemsBought: user.itemsBought });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
+  }
+};
+

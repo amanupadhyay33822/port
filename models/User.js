@@ -17,15 +17,26 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  appointments:[{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"Appointment"
+  appointments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Appointment"
   }],
   itemsBought: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product", // Reference to the product schema (items bought)
-    },
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true
+      },
+      totalPrice: {
+        type: Number,
+        required: true
+      }
+    }
   ],
   createdAt: {
     type: Date,
