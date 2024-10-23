@@ -196,7 +196,7 @@ exports.getItemsBought = async (req, res) => {
     // Fetch the user and populate the product details in itemsBought
     const user = await User.findById(userId).populate({
       path: "itemsBought.productId", // Populate the productId field in itemsBought
-      select: "name price description ", // Exclude buffer field and include only necessary fields
+      select: "name price description images ", // Exclude buffer field and include only necessary fields
     });
 
     if (!user) {
