@@ -1,44 +1,38 @@
 const Appointment = require("../models/Appointment"); // Adjust path as necessary
 const User = require("../models/User"); // Adjust path as necessary
 const nodemailer = require("nodemailer");
+
+// Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   auth: {
-    pass: process.env.MAIL_PASS,
     user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
   },
 });
 
-// Function to send email
+// Function to send an email
 async function sendEmail(appointmentDetails) {
   const mailOptions = {
-    from: "amanupadhyay33822@gmail.com", // Your email address
-    to: "amanu0181@gmail.com", // Seller's email address
-    subject: "New Digital Art Appointment Confirmation",
-    text: `Dear [Owner's Name],
+    from: "akangkhasarkar@gmail.com", // Replace with your email
+    to: appointmentDetails.email,
+    subject: "Appointment Confirmation",
+    text: `Dear ${appointmentDetails.fullName},
     
-    We are pleased to inform you that a new appointment for creating digital art has been successfully scheduled. Below are the details of the appointment:
-    
-    **Appointment Details:**
-    
-    - **Name:** ${appointmentDetails.name}
-    - **Email:** ${appointmentDetails.email}
-    - **Phone Number:** ${appointmentDetails.phoneNumber}
-    - **Genre:** ${appointmentDetails.genre}
-    - **Residency Status:** ${appointmentDetails.residencyStatus}
-    - **Available Days:** ${appointmentDetails.availableDays.join(", ")}
-    - **Placement:** ${appointmentDetails.placement}
-    - **Size Estimate:**
-      - Weight: ${appointmentDetails.sizeEstimate.weight} kg
-      - Height: ${appointmentDetails.sizeEstimate.height} cm
-    - **Color Preference:** ${appointmentDetails.color}
-    - **Design Description:** ${appointmentDetails.designDescription}
-    
-    Please review the above details and prepare for the appointment accordingly. If you have any questions or require further information, feel free to reach out.
-    
-    Thank you!
-    
-    Best regards,`,
+    Thank you for scheduling an appointment. Below are the details:
+
+    - **Phone:** ${appointmentDetails.phone}
+    - **Budget:** ${appointmentDetails.budget}
+    - **Message:** ${appointmentDetails.message || "N/A"}
+    - **Age Confirmation:** ${appointmentDetails.ageConfirmation ? "Yes" : "No"}
+    - **Newsletter Subscription:** ${
+      appointmentDetails.newsletterSubscription ? "Subscribed" : "Not Subscribed"
+    }
+
+    Please contact us if you have any questions.
+
+    Best regards,
+    Your Company`,
   };
 
   try {
@@ -49,34 +43,35 @@ async function sendEmail(appointmentDetails) {
   }
 }
 
+// Controller for creating an appointment
 const createAppointment = async (req, res) => {
   try {
     const {
-      name,
+      id, // User ID
+      fullName,
       email,
-      phoneNumber,
-      genre,
-      residencyStatus,
-      availableDays,
-      placement,
-      sizeEstimate,
-      color,
-      designDescription,
+      phone,
+      budget,
+      message,
+      ageConfirmation,
+      newsletterSubscription,
     } = req.body;
-    const userId = req.user.id;
+
+    const userId = req.body.id;
+    console.log(req.body);
+
     // Create a new appointment
     const newAppointment = new Appointment({
-      name,
+      fullName,
       email,
-      phoneNumber,
-      genre,
-      residencyStatus,
-      availableDays,
-      placement,
-      sizeEstimate,
-      color,
-      designDescription,
+      phone,
+      budget,
+      message,
+      ageConfirmation,
+      newsletterSubscription,
     });
+
+    console.log(newAppointment);
 
     // Save the appointment to the database
     const savedAppointment = await newAppointment.save();
@@ -86,8 +81,7 @@ const createAppointment = async (req, res) => {
       $push: { appointments: savedAppointment._id },
     });
 
-    // Send an email to the seller (you need to configure nodemailer)
-
+    // Send confirmation email
     await sendEmail(savedAppointment);
 
     return res.status(201).json({
@@ -100,21 +94,24 @@ const createAppointment = async (req, res) => {
   }
 };
 
-const getallAppointments = async (req, res) => {
+// Controller for retrieving all appointments
+const getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({});
-    
+
     return res.status(200).json({
-        success: true,
-        appointments,
-        message: "User registered successfully",
-      });
+      success: true,
+      appointments,
+      message: "Appointments retrieved successfully.",
+    });
   } catch (error) {
+    console.error("Error retrieving appointments:", error);
     return res.status(500).json({
-        success: false,
-        message: error.message,
-      });
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-module.exports = { createAppointment ,getallAppointments};
+// Export the controller functions
+module.exports = { createAppointment, getAllAppointments };

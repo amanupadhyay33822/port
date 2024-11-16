@@ -14,6 +14,7 @@ const transporter = nodemailer.createTransport({
 // Function to send email
 async function sendEmail(sellerEmail, itemDetails) {
   const mailOptions = {
+  
     from: "amanupadhyay33822@gmail.com",
     to: sellerEmail,
     subject: `New Purchase - ${itemDetails.name}`,

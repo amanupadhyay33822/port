@@ -34,7 +34,7 @@ exports.verifyToken = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Something went wrong while validating the token",
+      message: error.message,
     });
   }
 };

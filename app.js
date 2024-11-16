@@ -9,6 +9,7 @@ const portfolioRoutes = require('./routes/portfolio');
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { connect } = require("./db/dbconfig");
+const Product = require("./models/Product");
 dotenv.config();
 const PORT = process.env.PORT || 4000;
 
@@ -31,7 +32,21 @@ app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/tatto", tattooRoutes);
 
-
+app.post('/bulk', async (req, res) => {
+	try {
+	  const dataToInsert = req.body; // Assuming an array of data objects
+  
+	  // Validate the data if necessary
+  
+	  const insertedData = await Product.insertMany(dataToInsert); 
+  
+	  res.status(201).json(insertedData);
+	} catch (error) {
+	  console.error(error);
+	  res.status(500).json({ error: 'Failed to populate data' });
+	}
+  });
+  
 
 
 app.listen(PORT, () => {
