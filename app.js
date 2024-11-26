@@ -6,6 +6,7 @@ const appointmentRoutes = require("./routes/appointment");
 const cookieParser = require("cookie-parser");
 const tattooRoutes = require('./routes/tatto');
 const portfolioRoutes = require('./routes/portfolio');
+const cartRoutes = require('./routes/cart');
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { connect } = require("./db/dbconfig");
@@ -31,6 +32,7 @@ app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/appointment", appointmentRoutes);
 app.use("/api/v1/portfolio", portfolioRoutes);
 app.use("/api/v1/tatto", tattooRoutes);
+app.use("/api/v1/cart", cartRoutes);
 
 app.post('/bulk', async (req, res) => {
 	try {
