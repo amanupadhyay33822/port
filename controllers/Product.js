@@ -12,9 +12,8 @@ const transporter = nodemailer.createTransport({
 });
 
 // Function to send email
-async function sendEmail(sellerEmail, itemDetails) {
-  const mailOptions = {
-  
+async function sendEmail(sellerEmail, buyerEmail, itemDetails) {
+  const sellerMailOptions = {
     from: "amanupadhyay33822@gmail.com",
     to: sellerEmail,
     subject: `New Purchase - ${itemDetails.name}`,
@@ -25,13 +24,30 @@ async function sendEmail(sellerEmail, itemDetails) {
       Please ship the item promptly!`,
   };
 
+  const buyerMailOptions = {
+    from: "amanupadhyay33822@gmail.com",
+    to: buyerEmail,
+    subject: `Purchase Confirmation - ${itemDetails.name}`,
+    text: `Thank you for your purchase!
+      - Item: ${itemDetails.name}
+      - Price: ${itemDetails.price.amount} ${itemDetails.price.currency}
+      
+      The seller has been notified to ship the item.`,
+  };
+
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
+    // Send email to seller
+    const sellerInfo = await transporter.sendMail(sellerMailOptions);
+    console.log("Email sent to seller: " + sellerInfo.response);
+
+    // Send email to buyer
+    const buyerInfo = await transporter.sendMail(buyerMailOptions);
+    console.log("Email sent to buyer: " + buyerInfo.response);
   } catch (error) {
     console.error("Error sending email: ", error);
   }
 }
+
 
 // Create Product
 exports.createProduct = async (req, res) => {
@@ -102,20 +118,21 @@ exports.deleteProduct = async (req, res) => {
 exports.buyItem = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
-
-    // const userId = req.user.id;
-
+    const userId = req.user.id;
+    console.log(typeof productId)
+    
     if (!productId || !quantity) {
       return res
         .status(400)
         .json({ message: " Product ID, and Quantity are required and email" });
     }
-    // const user = await User.findById(userId);
-    // if (!user) {
-    //   return res.status(404).json({ message: "User not found" });
-    // }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     // Find the product
     const product = await Product.findById(productId);
+    console.log(product)
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -128,12 +145,13 @@ exports.buyItem = async (req, res) => {
     await product.save();
 
     const sellerEmail = product.vendor.email;
-    // Optionally, you could also save the order details in the User's purchased items
-    // await User.findByIdAndUpdate(userId, {
-    //   $push: { itemsBought: productId },
-    // });
+    const productObjectId = new mongoose.Types.ObjectId(productId);
+   // Optionally, you could also save the order details in the User's purchased items
+    await User.findByIdAndUpdate(userId, {
+      $push: { itemsBought: productObjectId  },
+    });
 
-    await sendEmail(sellerEmail, product);
+    await sendEmail(sellerEmail,user.email ,product);
     return res.status(200).json({
       message: "Order placed successfully",
       product: product.name,
